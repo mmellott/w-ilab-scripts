@@ -1,0 +1,5 @@
+#!/bin/bash
+# copy all scripts to testbed
+
+scp *.sh mmellott@ops.wilab2.ilabt.iminds.be:w-ilab-scripts
+
