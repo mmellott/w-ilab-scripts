@@ -1,13 +1,21 @@
 #!/bin/bash
+# configures a wireless interface
 
-[[ -z $1 ]] && echo "Usage: setup.sh <ip addr>" && exit
+if (( $# < 2 )); then
+  echo "Usage: setup.sh <iface> <ip_addr>"
+  exit
+fi
+
+iface="$1"
+ip_addr="$2"
 
 set -x -e
 
-iwconfig wlan0 mode ad-hoc
-ifconfig wlan0 $ip_addr up
-iwconfig wlan0 txpower 1
-iwconfig wlan0 rate 6M fixed
+iwconfig $iface mode ad-hoc
+ifconfig $iface $ip_addr
+ifconfig $iface netmask 255.255.255.0
+iwconfig $iface txpower 1
+iwconfig $iface rate 6M fixed
 
-iw dev wlan0 ibss join mellott 5180 fixed-freq aa:bb:cc:dd:ee:ff
+iw dev $iface ibss join mellott 5180 fixed-freq aa:bb:cc:dd:ee:ff
 
