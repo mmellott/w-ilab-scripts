@@ -1,21 +1,48 @@
 #!/bin/bash
-# configures a wireless interface
+# configures a wireless node
 
-if (( $# < 2 )); then
-  echo "Usage: setup.sh <iface> <ip_addr>"
-  exit
-fi
+# full daemonization of external command with setsid
+# http://blog.n01se.net/blog-n01se-net-p-145.html
+function daemonize {
+    (
+        # redirect stdin/stdout/stderr before setsid
+        [[ -t 0 ]] && exec </dev/null
+        [[ -t 1 ]] && exec >/dev/null
+        [[ -t 2 ]] && exec 2>/dev/null
 
-iface="$1"
-ip_addr="$2"
+        # ensure cwd is not a mounted fs
+        cd /
 
-set -x -e
+        # close unneeded fds
+        eval exec {3..255}\>\&-
 
-iwconfig $iface mode ad-hoc
-ifconfig $iface $ip_addr
-ifconfig $iface netmask 255.255.255.0
-iwconfig $iface txpower 1
-iwconfig $iface rate 6M fixed
+        # start daemon
+        exec setsid "$@"
+    ) &
+}
 
-iw dev $iface ibss join mellott 5180 fixed-freq aa:bb:cc:dd:ee:ff
+# setup <iface> <ip_addr>
+function setup {
+    local iface="$1"
+    local ip_addr="$2"
+
+    iwconfig $iface mode ad-hoc
+    ifconfig $iface $ip_addr
+    ifconfig $iface netmask 255.255.255.0
+    iwconfig $iface txpower 1
+    iwconfig $iface rate 6M fixed
+
+    iw dev $iface ibss join mellott 5180 fixed-freq aa:bb:cc:dd:ee:ff
+}
+
+name=$(hostname | cut -d'.' -f1)
+exp=$(hostname | cut -d'.' -f2)
+num=$(echo "$name" | sed -e 's|[^0-9]||g')
+
+setup wlan0 "10.0.0.$num"
+
+# start olsrd
+olsrd=/users/mmellott/olsrd-0.9.0.3
+make -C "$olsrd" install_all
+daemonize olsrd
 
