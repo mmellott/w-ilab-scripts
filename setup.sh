@@ -37,7 +37,7 @@ function setup {
 
 name=$(hostname | cut -d'.' -f1)
 exp=$(hostname | cut -d'.' -f2)
-num=$(echo "$name" | sed -e 's|[^0-9]||g')
+num=$(echo "$name" | sed -e 's|[^0-9]*0*||')
 
 setup wlan0 "10.0.0.$num"
 
