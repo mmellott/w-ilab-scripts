@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# wiphy <iface> <ip_addr>
+function wiphy {
+    local iface="$1"
+    local ip_addr="$2"
+
+    ifconfig "$iface" "$ip_addr"
+    ifconfig "$iface" netmask 255.255.255.0
+    iwconfig "$iface" txpower 1
+    iwconfig "$iface" rate 6M fixed
+}
+
+# ibss <ip_addr>
+function ibss {
+    iwconfig wlan0 mode ad-hoc
+    wiphy wlan0 "$1"
+    iw dev wlan0 ibss join mellott 5180 fixed-freq aa:bb:cc:dd:ee:ff
+}
+
+# mesh <ip_addr>
+function mesh {
+    iw phy phy0 interface add mp0 type mp mesh_id mellott
+    wiphy mp0 "$1"
+}
+
