@@ -15,7 +15,7 @@ ethtool -S wlan0 > "$t"
 before_total=$(cat "$t" | time_total)
 before_tx=$(cat "$t" | time_tx)
 
-dd if=/dev/zero count 1000 | nc "$1" 5000
+dd if=/dev/zero count=1000 | nc "$1" 5000
 
 t=$(mktemp)
 ethtool -S wlan0 > "$t"
